@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Modal, Button } from 'antd';
 import { CheckCircleTwoTone } from '@ant-design/icons';
 
-const SuccessPopup = ({ visible, onClose }) => {
+const SuccessPopup = ({ visible, onClose, message }) => {
   const injectMetaPixel = () => {
     // Inject main Meta Pixel script
     const initScript = document.createElement('script');
@@ -76,10 +76,12 @@ const SuccessPopup = ({ visible, onClose }) => {
     >
       <div className="text-center py-6">
         <CheckCircleTwoTone twoToneColor="#52c41a" style={{ fontSize: '3rem' }} />
-        <h2 className="text-2xl font-semibold mt-4">Applied Successfully!</h2>
+        <h2 className="text-2xl font-semibold mt-4">{message ? message : "Applied Successfully!"}</h2>
+        {!message &&
         <p className="text-gray-600 mt-2">
           Your Application Submitted Successfully, Please wait for a call from our Team.
         </p>
+        }
         <Button type="primary" onClick={handleClose} className="mt-6">
           Close
         </Button>

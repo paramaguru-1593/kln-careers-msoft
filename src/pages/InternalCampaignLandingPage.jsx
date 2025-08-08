@@ -1,0 +1,69 @@
+import React, { useEffect, useRef, useState } from 'react'
+import Footer from '../components/Footer'
+import Header from '../components/Header'
+import Logo from '../images/msLogo.png'
+import { GroupByAnima } from '../components/GroupByAnima';
+import { MarketSoftJoin } from '../components/MarketSoftJoin';
+import ExternalCampaignForm from '../components/ExternalCampaign/ExternalCampaignForm';
+import InternalCampaignForm from '../components/InternalCampaign/InternalCampaignForm';
+
+const InternalCampaignLandingPage = () => {
+
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+//   useEffect(() => {
+//     const img = new Image();
+//     img.src = BgImg; // Preload the image
+
+//     const observer = new IntersectionObserver(
+//       ([entry]) => {
+//         if (entry.isIntersecting) {
+//           setIsVisible(true);
+//           observer.disconnect();
+//         }
+//       },
+//       {
+//         rootMargin: "100px", // Load earlier
+//       }
+//     );
+
+//     if (sectionRef.current) {
+//       observer.observe(sectionRef.current);
+//     }
+
+//     return () => {
+//       if (sectionRef.current) observer.unobserve(sectionRef.current);
+//     };
+//   }, []);
+
+  return (
+    <div className="bg-white flex flex-row justify-center w-full">
+      <div className="bg-white overflow-hidden w-full relative">
+        
+        {/* <Header />
+        <section className="w-full bg-cover bg-center"
+        ref={sectionRef}
+        style={{
+          backgroundImage: isVisible ? `url(${BgImg})` : "none",
+        }}
+        >
+          <GroupByAnima />
+        </section> */}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="col-span-1">
+          <MarketSoftJoin isFrom={"campaignPage"} />
+          </div>
+          <div className="col-span-1">
+          <InternalCampaignForm />
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    </div>
+  )
+}
+
+export default InternalCampaignLandingPage
