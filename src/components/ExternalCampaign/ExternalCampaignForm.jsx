@@ -48,9 +48,13 @@ const ExternalCampaignForm = () => {
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
+    // phone: Yup.string()
+    //     .matches(/^[0-9]{10}$/, 'Contact number must be 10 digits')
+    //     .required('Contact number is required'),
     phone: Yup.string()
-        .matches(/^[0-9]{10}$/, 'Contact number must be 10 digits')
-        .required('Contact number is required'),
+        .required('Contact number is required')
+        .matches(/^\d{10}$/, 'Contact number must be 10 digits')
+        .matches(/^[6-9]/, 'Please Enter Valid Contact number.'),
     jobLocation: Yup.string().required('Job location is required'),
     language: Yup.string().required('Language is required'),
     preferredDate: Yup.string().required('Preferred date is required'),
@@ -197,7 +201,26 @@ const ExternalCampaignForm = () => {
                     placeholder="Name as per Aadhar"
                     className="w-full"
                     onInput={(e) => {
-                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, ''); // Allow only letters and spaces
+                      let text = e.target.value ?? "";
+                      // Step 1: Clean the input
+                      text = text
+                        .trimStart()
+                        .replace(/[^a-zA-Z .]/g, "")   // Only letters, space, dot
+                        .replace(/  +/g, " ");         // Replace multiple spaces with single space
+
+                      // Step 2: Capitalize first letter of each word
+                      let splitStr = text.toLowerCase().split(" ");
+                      for (let i = 0; i < splitStr.length; i++) {
+                        splitStr[i] =
+                          splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+                      }
+                      text = splitStr.join(" ");
+
+                      // Optional: Limit to one dot
+                      if ((text.split(".").length - 1) > 1) return;
+
+                      // Update the input value
+                      e.target.value = text;             
                     }}
                   />
                   <ErrorMessage

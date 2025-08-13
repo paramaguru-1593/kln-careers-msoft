@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Input, message } from 'antd';
+import { Button, Input, message, Select } from 'antd';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { POST } from '../../api/api_helpers';
@@ -13,13 +13,18 @@ const InternalCampaignForm = () => {
     const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     emp_code: Yup.string().required('Employee ID is required'),
+    jobLocation: Yup.string().required('Job location is required'),
     references: Yup.array()
         .of(
         Yup.object().shape({
             name: Yup.string().required('Reference name is required'),
+            // number: Yup.string()
+            // .required('Reference number is required')
+            // .matches(/^[0-9]{10}$/, 'Reference number must be exactly 10 digits'), // Ensure exactly 10 digits
             number: Yup.string()
-            .required('Reference number is required')
-            .matches(/^[0-9]{10}$/, 'Reference number must be exactly 10 digits'), // Ensure exactly 10 digits
+                    .required('Reference number is required')
+                    .matches(/^\d{10}$/, 'Reference number must be 10 digits')
+                    .matches(/^[6-9]/, 'Please Enter Valid Reference number.'),
         })
         )
         .test(
@@ -41,6 +46,7 @@ const InternalCampaignForm = () => {
         const payload = {
             name: values.name,
             emp_code: values.emp_code,
+            location: values.jobLocation,
             ref_name: refNames,
             ref_number: refNumbers,
         };
@@ -109,7 +115,8 @@ const InternalCampaignForm = () => {
             initialValues={{
                 name: '',
                 emp_code: '',
-                  references: [{ name: '', number: '' }], // Start with one reference
+                jobLocation: '',
+                references: [{ name: '', number: '' }], // Start with one reference
             }}
             validationSchema={validationSchema}
             onSubmit={(values, { resetForm }) => handleSubmit(values, { resetForm })}
@@ -127,7 +134,26 @@ const InternalCampaignForm = () => {
                     placeholder="Enter your name"
                     className="w-full"
                     onInput={(e) => {
-                        e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, ''); // Allow only letters and spaces
+                        let text = e.target.value ?? "";
+                        // Step 1: Clean the input
+                        text = text
+                            .trimStart()
+                            .replace(/[^a-zA-Z .]/g, "")   // Only letters, space, dot
+                            .replace(/  +/g, " ");         // Replace multiple spaces with single space
+
+                        // Step 2: Capitalize first letter of each word
+                        let splitStr = text.toLowerCase().split(" ");
+                        for (let i = 0; i < splitStr.length; i++) {
+                            splitStr[i] =
+                            splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+                        }
+                        text = splitStr.join(" ");
+
+                        // Optional: Limit to one dot
+                        if ((text.split(".").length - 1) > 1) return;
+
+                        // Update the input value
+                        e.target.value = text;
                     }}
                     />
                     <ErrorMessage
@@ -158,8 +184,35 @@ const InternalCampaignForm = () => {
                     />
                 </div>
 
+                {/* Job Location Field */}
+                <div className="space-y-2 mt-4">
+                  <label className="font-medium text-[14px] xl:text-[16px] font-['Montserrat',Helvetica] mb-1">
+                    Job Location <span className="text-[#ed1b24]">*</span>
+                  </label>
+                  <Field name="jobLocation">
+                    {({ field, form }) => (
+                      <Select
+                        {...field}
+                        className="w-full"
+                        onChange={(value) => form.setFieldValue('jobLocation', value)}
+                        value={field.value || undefined}
+                        options={[
+                          { value: 'Chennai', label: 'Chennai' },
+                          { value: 'Coimbatore', label: 'Coimbatore' },
+                        ]}
+                        placeholder="Select Job Location"
+                      />
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="jobLocation"
+                    component="div"
+                    className="text-[#ed1b24] text-sm"
+                  />
+                </div>
+
                 {/* References Section */}
-                <div className="mt-6">
+                <div className="mt-4">
                     {/* {values.references.map((_, index) => ( */}
                     {values.references.map((ref, index) => (
                     <div key={index} className="grid grid-cols-2 gap-4 mb-4">
@@ -174,7 +227,26 @@ const InternalCampaignForm = () => {
                             placeholder="Enter reference name"
                             className="w-full mt-2"
                             onInput={(e) => {
-                                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, ''); // Allow only letters and spaces
+                                let text = e.target.value ?? "";
+                                // Step 1: Clean the input
+                                text = text
+                                    .trimStart()
+                                    .replace(/[^a-zA-Z .]/g, "")   // Only letters, space, dot
+                                    .replace(/  +/g, " ");         // Replace multiple spaces with single space
+
+                                // Step 2: Capitalize first letter of each word
+                                let splitStr = text.toLowerCase().split(" ");
+                                for (let i = 0; i < splitStr.length; i++) {
+                                    splitStr[i] =
+                                    splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+                                }
+                                text = splitStr.join(" ");
+
+                                // Optional: Limit to one dot
+                                if ((text.split(".").length - 1) > 1) return;
+
+                                // Update the input value
+                                e.target.value = text;
                             }}
                         />
                         <ErrorMessage
