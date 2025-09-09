@@ -120,7 +120,7 @@ const InternalCampaignForm = () => {
                 const hrList = response?.data?.data || [];
                 // setHrList(hrList.map((hr) => ({ value: hr?.id, label: hr?.name })));
                 const updatedHrList = [
-                // { value: 'any', label: 'Any recruiter' },
+                { value: 'any', label: 'Any recruiter' },
                 ...hrList.map((hr) => ({ value: hr?.id, label: hr?.name })),
                 ];
                 setHrList(updatedHrList);
@@ -287,9 +287,9 @@ const InternalCampaignForm = () => {
                         //   dropdownClassName="custom-dropdown"
                         dropdownMatchSelectWidth={false}
                         >
-                        <Option key="any" value="any">
+                        {/* <Option key="any" value="any">
                             Any recruiter
-                        </Option>
+                        </Option> */}
                         {hrList.map((hr, index) => (
                         <Option key={`${hr?.value}-${index}`} value={hr.value}>
                             {hr.label}
