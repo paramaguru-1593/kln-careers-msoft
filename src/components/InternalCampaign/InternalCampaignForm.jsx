@@ -29,22 +29,24 @@ const InternalCampaignForm = () => {
                     .required('Reference number is required')
                     .matches(/^\d{10}$/, 'Reference number must be 10 digits')
                     .matches(/^[6-9]/, 'Please Enter Valid Reference number.'),
+            language: Yup.string().required('Language is required'),
         })
         )
         .test(
         'at-least-one-reference',
         'At least one reference is required',
-        (references) => Array.isArray(references) && references.some((ref) => ref.name && ref.number)
+        (references) => Array.isArray(references) && references.some((ref) => ref.name && ref.number && ref.language)
         ),
     });
 
     const handleSubmit = async (values, {resetForm}) => {
         setIsSubmitting(true);
 
-        const validReferences = values.references.filter((ref) => ref.name || ref?.number);
+        const validReferences = values.references.filter((ref) => ref.name || ref?.number || ref?.language);
 
         const refNames = validReferences.map((ref) => ref.name);
         const refNumbers = validReferences.map((ref) => ref.number);
+        const refLanguage = validReferences.map((ref) => ref.language);
 
         const payload = {
             name: values.name,
@@ -53,6 +55,7 @@ const InternalCampaignForm = () => {
             user_id: values.locationBasedHr === 'any' ? null : values.locationBasedHr,
             ref_name: refNames,
             ref_number: refNumbers,
+            ref_language: refLanguage
         };
 
 
@@ -85,7 +88,7 @@ const InternalCampaignForm = () => {
         message.error('You can add up to 10 references only.');
         return;
     }
-    const updatedReferences = [...values.references, { name: '', number: '' }];
+    const updatedReferences = [...values.references, { name: '', number: '', language: '' }];
     setFieldValue('references', updatedReferences);
     };
 
@@ -117,7 +120,7 @@ const InternalCampaignForm = () => {
                 const hrList = response?.data?.data || [];
                 // setHrList(hrList.map((hr) => ({ value: hr?.id, label: hr?.name })));
                 const updatedHrList = [
-                { value: 'any', label: 'Any recruiter' },
+                // { value: 'any', label: 'Any recruiter' },
                 ...hrList.map((hr) => ({ value: hr?.id, label: hr?.name })),
                 ];
                 setHrList(updatedHrList);
@@ -164,7 +167,7 @@ const InternalCampaignForm = () => {
                 emp_code: '',
                 jobLocation: '',
                 locationBasedHr: '',
-                references: [{ name: '', number: '' }], // Start with one reference
+                references: [{ name: '', number: '', language: '' }], // Start with one reference
             }}
             validationSchema={validationSchema}
             onSubmit={(values, { resetForm }) => handleSubmit(values, { resetForm })}
@@ -245,6 +248,7 @@ const InternalCampaignForm = () => {
                         onChange={(value) => {
                             form.setFieldValue('jobLocation', value)
                             form.setFieldValue('locationBasedHr', '')
+                            setHrList([])
                             fetchHrListBasedOnLocation(value);
                         }}
                         value={field.value || undefined}
@@ -267,20 +271,33 @@ const InternalCampaignForm = () => {
                 {/* Location based hr Field */}
                 <div className="space-y-2 mt-4">
                   <label className="font-medium text-[14px] xl:text-[16px] font-['Montserrat',Helvetica] mb-1">
-                    Location Based HR <span className="text-[#ed1b24]">*</span>
+                    Recruiter name <span className="text-[#ed1b24]">*</span>
                   </label>
                   <Field name="locationBasedHr">
                     {({ field, form }) => (
-                      <Select
+                    <Select
                         {...field}
                         className="w-full"
                         onChange={(value) => {
-                            form.setFieldValue('locationBasedHr', value)
+                            form.setFieldValue("locationBasedHr", value);
                         }}
-                        value={field.value}
-                        options={hrList}
+                        value={hrList.some(hr => hr.value === field.value) ? field.value : ""} // ensure valid value
                         placeholder="Select HR"
-                      />
+                        getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                        //   dropdownClassName="custom-dropdown"
+                        dropdownMatchSelectWidth={false}
+                        >
+                        <Option key="any" value="any">
+                            Any recruiter
+                        </Option>
+                        {hrList.map((hr, index) => (
+                        <Option key={`${hr?.value}-${index}`} value={hr.value}>
+                            {hr.label}
+                            </Option>
+                        ))}
+                    </Select>
+
+
                     )}
                   </Field>
                   <ErrorMessage
@@ -294,7 +311,7 @@ const InternalCampaignForm = () => {
                 <div className="mt-4">
                     {/* {values.references.map((_, index) => ( */}
                     {values.references.map((ref, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-4 mb-4">
+                    <div key={index} className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                         {/* Reference Name */}
                         <div>
                         <label className="font-medium text-[14px] xl:text-[16px] font-['Montserrat',Helvetica] mb-1">
@@ -353,6 +370,35 @@ const InternalCampaignForm = () => {
                         name={`references[${index}].number`}
                         component="div"
                         className="text-[#ed1b24] text-sm"
+                        />
+                        </div>
+
+                        {/* Reference Language */}
+                        <div>
+                        <label className="font-medium text-[14px] xl:text-[16px] font-['Montserrat',Helvetica] mb-1">
+                            Language <span className="text-[#ed1b24]">*</span>
+                        </label>
+                        <Field name={`references[${index}].language`}>
+                            {({ field, form }) => (
+                            <Select
+                                {...field}
+                                className="w-full mt-2"
+                                onChange={(value) => form.setFieldValue(`references[${index}].language`, value)}
+                                value={field.value || undefined}
+                                options={[
+                                { value: "Kannada", label: "Kannada" },
+                                { value: "Malayalam", label: "Malayalam" },
+                                { value: "Tamil", label: "Tamil" },
+                                { value: "Telugu", label: "Telugu" },
+                                ]}
+                                placeholder="Select Language"
+                            />
+                            )}
+                        </Field>
+                        <ErrorMessage
+                            name={`references[${index}].language`}
+                            component="div"
+                            className="text-[#ed1b24] text-sm"
                         />
                         </div>
                     </div>
