@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Input, message, Select } from 'antd';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { POST } from '../../api/api_helpers';
+import { GET, POST } from '../../api/api_helpers';
 import Images from '../../images/images';
 import SuccessPopup from '../popups/SuccessPopup';
 
 const InternalCampaignForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [locations, setLocations] = useState([]); // State to store locations
+    const [hrList, setHrList] = useState([]); // State to store locations
 
     const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     emp_code: Yup.string().required('Employee ID is required'),
     jobLocation: Yup.string().required('Job location is required'),
+    locationBasedHr: Yup.string()
+            .required('HR is required'),
     references: Yup.array()
         .of(
         Yup.object().shape({
@@ -34,7 +38,6 @@ const InternalCampaignForm = () => {
         ),
     });
 
-
     const handleSubmit = async (values, {resetForm}) => {
         setIsSubmitting(true);
 
@@ -47,6 +50,7 @@ const InternalCampaignForm = () => {
             name: values.name,
             emp_code: values.emp_code,
             location: values.jobLocation,
+            user_id: values.locationBasedHr === 'any' ? null : values.locationBasedHr,
             ref_name: refNames,
             ref_number: refNumbers,
         };
@@ -85,6 +89,49 @@ const InternalCampaignForm = () => {
     setFieldValue('references', updatedReferences);
     };
 
+    useEffect(() => {
+        const fetchLocations = async () => {
+            try {
+                const response = await GET('getLocation'); // Replace with the correct endpoint
+                
+                if (response?.data?.status === 200) {
+                    setLocations(response?.data?.locations.map((loc) => ({ value: loc, label: loc })));
+                } else {
+                    message.error('Failed to fetch locations.');
+                }
+            } catch (error) {
+                console.error('Error fetching locations:', error);
+                message.error('Failed to fetch locations.');
+            }
+        };
+
+        fetchLocations();
+    }, []);
+
+    const fetchHrListBasedOnLocation = async (location) => {
+        try {
+            const response = await POST('getAvailableHrBasedOnLocation', { location }); // Use POST instead of GET
+            console.log(response?.data, 'HR list response');
+
+            if (response?.data?.status === 200) {
+                const hrList = response?.data?.data || [];
+                // setHrList(hrList.map((hr) => ({ value: hr?.id, label: hr?.name })));
+                const updatedHrList = [
+                { value: 'any', label: 'Any recruiter' },
+                ...hrList.map((hr) => ({ value: hr?.id, label: hr?.name })),
+                ];
+                setHrList(updatedHrList);
+                console.log(updatedHrList,'fkopkosfos');
+                
+            } else {
+                message.error('Failed to fetch HR list for the selected location.');
+            }
+        } catch (error) {
+            console.error('Error fetching HR list:', error);
+            message.error('Failed to fetch HR list for the selected location.');
+        }
+    };             
+
     return (
         <section className="w-full bg-[#ffcdcd36] py-4 sm:py-10 pr-4 lg:pr-12">
         {showSuccessPopup && (
@@ -116,6 +163,7 @@ const InternalCampaignForm = () => {
                 name: '',
                 emp_code: '',
                 jobLocation: '',
+                locationBasedHr: '',
                 references: [{ name: '', number: '' }], // Start with one reference
             }}
             validationSchema={validationSchema}
@@ -194,18 +242,49 @@ const InternalCampaignForm = () => {
                       <Select
                         {...field}
                         className="w-full"
-                        onChange={(value) => form.setFieldValue('jobLocation', value)}
+                        onChange={(value) => {
+                            form.setFieldValue('jobLocation', value)
+                            form.setFieldValue('locationBasedHr', '')
+                            fetchHrListBasedOnLocation(value);
+                        }}
                         value={field.value || undefined}
-                        options={[
-                          { value: 'Chennai', label: 'Chennai' },
-                          { value: 'Coimbatore', label: 'Coimbatore' },
-                        ]}
+                        // options={[
+                        //   { value: 'Chennai', label: 'Chennai' },
+                        //   { value: 'Coimbatore', label: 'Coimbatore' },
+                        // ]}
+                        options={locations}
                         placeholder="Select Job Location"
                       />
                     )}
                   </Field>
                   <ErrorMessage
                     name="jobLocation"
+                    component="div"
+                    className="text-[#ed1b24] text-sm"
+                  />
+                </div>
+
+                {/* Location based hr Field */}
+                <div className="space-y-2 mt-4">
+                  <label className="font-medium text-[14px] xl:text-[16px] font-['Montserrat',Helvetica] mb-1">
+                    Location Based HR <span className="text-[#ed1b24]">*</span>
+                  </label>
+                  <Field name="locationBasedHr">
+                    {({ field, form }) => (
+                      <Select
+                        {...field}
+                        className="w-full"
+                        onChange={(value) => {
+                            form.setFieldValue('locationBasedHr', value)
+                        }}
+                        value={field.value}
+                        options={hrList}
+                        placeholder="Select HR"
+                      />
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="locationBasedHr"
                     component="div"
                     className="text-[#ed1b24] text-sm"
                   />
