@@ -1,7 +1,8 @@
 import React from "react";
 import Images from "../images/images";
+import Logo from '../images/msLogo.png'
 
-export const MarketSoftJoin = () => {
+export const MarketSoftJoin = ({ isFrom }) => {
   const benefitItems = [
     {
       id: 1,
@@ -79,6 +80,10 @@ export const MarketSoftJoin = () => {
 
   return (
     <section className="w-full mx-auto py-8 sm:py-10 px-4 sm:px-8 md:px-12">
+      {isFrom === 'campaignPage' &&
+      <img src={Logo} alt="Logo" className="w-[10rem] h-[4rem] object-contain mx-auto mb-4" />
+    }
+
       <div className="flex flex-col items-center mb-8 sm:mb-12">
         <h2 className="text-[22px] lg:text-[25px] xl:text-[28px] font-semibold text-center">
           <span className="font-medium text-black">Why </span>

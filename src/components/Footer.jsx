@@ -47,7 +47,7 @@ const Footer = () => {
                   +91 96774 70425
                   </span>
                 </div>
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                     <img
                         className="w-[25px] h-[25px] object-cover mr-2"
                         alt="Phone icon"
@@ -56,7 +56,7 @@ const Footer = () => {
                   <span className="font-normal text-[#111111] text-base font-['Poppins',Helvetica]">
                   +91 98842 27667
                   </span>
-                </div>
+                </div> */}
                 <div className="flex items-center">
                   <img
                     className="w-[25px] h-[25px] object-cover mr-2"

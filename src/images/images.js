@@ -10,6 +10,8 @@ import Benefit from '../images/benefit.svg'
 import CashAward from '../images/cashAward.svg'
 import LocationRed from '../images/locationRed.svg'
 import FunActivity from '../images/funActivity.svg'
+import MoneyIcon from '../images/moneyIcon.png'
+
 
 
 const Images = {
@@ -24,7 +26,8 @@ const Images = {
     Benefit,
     CashAward,
     LocationRed,
-    FunActivity
+    FunActivity,
+    MoneyIcon
 }
 
 export default Images;
