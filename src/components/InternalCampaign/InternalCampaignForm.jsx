@@ -277,6 +277,13 @@ const InternalCampaignForm = () => {
                     {({ field, form }) => (
                     <Select
                         {...field}
+                        showSearch
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                            (option?.children ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
                         className="w-full"
                         onChange={(value) => {
                             form.setFieldValue("locationBasedHr", value);
